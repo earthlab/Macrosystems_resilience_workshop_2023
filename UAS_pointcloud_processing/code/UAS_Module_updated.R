@@ -28,7 +28,7 @@ names_to_cloud = substr(file_list, 2, nchar(file_list)-4)
 cropped_dense_point_cloud_fname <- file.path(paste0(file_list[2]))
 dense_point_cloud <- lidR::readLAS(cropped_dense_point_cloud_fname)
 plot(dense_point_cloud,color = "Z")
-rglwidget()
+
 
 main_dsm = raster("D:/Carbon_dynamics/UAS-processing/Test/dsm_bigelk_1.tif")
 test_dsm = crop(main_dsm,dense_point_cloud)
@@ -91,7 +91,7 @@ terra::writeRaster(x = dtm, filename = cropped_dtm_fname, overwrite = TRUE)
 dtm_resamp <- raster::resample(x = dtm, y = test_dsm, method = "bilinear")
 
 plot(dtm_resamp, color =  "values",main = "Digital terrain model")
-rglwidget()
+
 
 chm <- test_dsm - dtm_resamp
   
