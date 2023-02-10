@@ -44,7 +44,7 @@ setwd(wd)
 
 # explore the raw data and load the raw data file names
 
-file_list = dir("/home/jovyan/data_forest_resiliency/UAS/input", pattern = ".las", full.names = FALSE, ignore.case = TRUE) 
+file_list = dir(wd, pattern = ".las", full.names = FALSE, ignore.case = TRUE) 
 names_to_cloud = substr(file_list, 2, nchar(file_list)-4) # truncate the file names only to get the name part eliminating the extension.
 ```
 
