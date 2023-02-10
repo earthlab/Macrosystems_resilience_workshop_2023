@@ -15,7 +15,7 @@ new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"
 if(length(new.packages)) install.packages(new.packages)
 
 
-## Load the required libraries. We use several libraries that can help with loading, reading spatial data including raster and point cloud data, 
+## Load the required libraries. We use several libraries that can help with data loading, reading spatial data including raster and point cloud data, 
 ## analyse those data, and to visualize and write the spatial data back into a desired location.
 
 library(tidyverse)
@@ -55,9 +55,9 @@ names_to_cloud = substr(file_list, 2, nchar(file_list)-4) # truncate the file na
 # A point cloud is a three dimensional discrete set of points space. Each point can be identified using a set of three Cartesian coordinates (X, Y, and Z).
 # The set of point cloud can represent a 3D landscape, or a shape, or an object. 
 
-cropped_dense_point_cloud_fname <- file.path(paste0(file_list[2]))
+cropped_dense_point_cloud_fname <- file.path(paste0(file_list[2])) # the number here to say data from which file in the list we want to load
 dense_point_cloud <- lidR::readLAS(cropped_dense_point_cloud_fname)
-plot(dense_point_cloud,color = "Z")
+plot(dense_point_cloud,color = "Z") # color the points based on elevation or the Z coordinate
 
 #read digital surface model in raster format. Digital surface model here was created using proprietary software called Agisoft metashape. 
 main_dsm = raster(file.path(paste0("DSM_NIWOT_plt2.tif")))
