@@ -38,13 +38,13 @@ rgl::setupKnitr(autoprint = TRUE)
 
 ```{r}
 # set working environment
-wd = "D:/Carbon_dynamics/UAS-processing/Test"
+wd = "/home/jovyan/data_forest_resiliency/UAS/input"
 setwd(wd)
 
 
 # explore the raw data and load the raw data file names
 
-file_list = dir("D:/Carbon_dynamics/UAS-processing/Test", pattern = ".las", full.names = FALSE, ignore.case = TRUE) 
+file_list = dir(wd, pattern = ".las", full.names = FALSE, ignore.case = TRUE) 
 names_to_cloud = substr(file_list, 2, nchar(file_list)-4) # truncate the file names only to get the name part eliminating the extension.
 ```
 
@@ -55,7 +55,7 @@ names_to_cloud = substr(file_list, 2, nchar(file_list)-4) # truncate the file na
 # A point cloud is a three dimensional discrete set of points space. Each point can be identified using a set of three Cartesian coordinates (X, Y, and Z).
 # The set of point cloud can represent a 3D landscape, or a shape, or an object. 
 
-cropped_dense_point_cloud_fname <- file.path(paste0(file_list[2])) # the number here to say data from which file in the list we want to load
+cropped_dense_point_cloud_fname <- file.path(paste0(file_list[1])) # the number here to say data from which file in the list we want to load
 
 dense_point_cloud <- lidR::readLAS(cropped_dense_point_cloud_fname)
 
@@ -81,20 +81,20 @@ site_name <- "NIWO"
 flight_datetime <- "06-28-2022"
 
 # directories to be created in this script
-new_dir <- file.path("data", site_name, flight_datetime)
+new_dir <- file.path("out_data", site_name, flight_datetime)
 
   if(!dir.exists(new_dir)) {
     dir.create(new_dir, recursive = TRUE)
   }
 
 
-classified_dense_pc <- file.path("data", site_name,flight_datetime, paste0( names_to_cloud[2],"_classified2.las"))
+classified_dense_pc <- file.path("data", site_name,flight_datetime, paste0( names_to_cloud[1],"_classified2.las"))
   
-cropped_dtm_fname <- file.path("data", site_name,flight_datetime, paste0(names_to_cloud[2], "_dtm2.tif"))
-cropped_chm_fname <- file.path("data", site_name,flight_datetime,paste0(names_to_cloud[2], "_chm2.tif"))
+cropped_dtm_fname <- file.path("out_data", site_name,flight_datetime, paste0(names_to_cloud[1], "_dtm2.tif"))
+cropped_chm_fname <- file.path("out_data", site_name,flight_datetime,paste0(names_to_cloud[1], "_chm2.tif"))
 
-cropped_ttops_fname <- file.path("data", site_name, flight_datetime, paste0(names_to_cloud[2], "_ttops_cropped2.gpkg"))
-cropped_crowns_fname <- file.path("data", site_name, flight_datetime,paste0(names_to_cloud[2], "_crowns_cropped2.gpkg"))
+cropped_ttops_fname <- file.path("out_data", site_name, flight_datetime, paste0(names_to_cloud[1], "_ttops_cropped2.gpkg"))
+cropped_crowns_fname <- file.path("out_data", site_name, flight_datetime,paste0(names_to_cloud[1], "_crowns_cropped2.gpkg"))
 ```
 
 
@@ -229,7 +229,7 @@ if(!file.exists(cropped_crowns_fname)) {
 
 ```{r}
 
-basemap= raster("D:/Carbon_dynamics/UAS-processing/Test/orthomosaic_NIWOT_plt2.tif")
+basemap= raster(file.path(paste0("orthomosaic_NIWOT_plt2.tif"")))
 
 crop_ortho = crop(basemap,test_dsm)
 
