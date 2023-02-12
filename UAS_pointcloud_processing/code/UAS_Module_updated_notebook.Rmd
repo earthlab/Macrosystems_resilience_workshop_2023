@@ -236,7 +236,7 @@ basemap= raster(file.path(paste0("orthomosaic_NIWOT_plt2.tif"")))
 
 crop_ortho = crop(basemap,test_dsm)
 
-#pal = colorRampPalette(c("green", "brown"))
+# pal = colorRampPalette(c("green","brown"))
 plot(chm)
 plot(crowns$geometry, add=TRUE)
 
