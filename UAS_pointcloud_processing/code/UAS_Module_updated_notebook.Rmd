@@ -45,7 +45,7 @@ setwd(wd)
 # explore the raw data and load the raw data file names
 
 file_list = dir(wd, pattern = ".las", full.names = FALSE, ignore.case = TRUE) 
-names_to_cloud = substr(file_list, 2, nchar(file_list)-4) # truncate the file names only to get the name part eliminating the extension.
+names_to_cloud = substr(file_list, 1, nchar(file_list)-4) # truncate the file names only to get the name part eliminating the extension.
 ```
 
 
@@ -104,6 +104,9 @@ cropped_crowns_fname <- file.path("out_data", site_name, flight_datetime,paste0(
 
 dense_point_cloud[["X scale factor"]] = 0.001
 dense_point_cloud[["Y scale factor"]] = 0.001
+
+
+# To classify ground in this module we use " cloth simulation function" algorithm. More information about the algorithm can be found https://r-lidar.github.io/lidRbook/gnd.html. The algorithm is first proposed by https://doi.org/10.3390/rs8060501
 
 classified_dense_point_cloud <- lidR::classify_ground(las = dense_point_cloud,
                                                       algorithm = csf(sloop_smooth = TRUE,
