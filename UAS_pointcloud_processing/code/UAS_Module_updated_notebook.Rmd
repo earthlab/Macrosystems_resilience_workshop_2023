@@ -15,7 +15,7 @@ new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"
 if(length(new.packages)) install.packages(new.packages)
 
 
-## Load the required libraries. We use several libraries that can help with loading, reading spatial data including raster and point cloud data, 
+## Load the required libraries. We use several libraries that can help with data loading, reading spatial data including raster and point cloud data, 
 ## analyse those data, and to visualize and write the spatial data back into a desired location.
 
 library(tidyverse)
@@ -38,14 +38,14 @@ rgl::setupKnitr(autoprint = TRUE)
 
 ```{r}
 # set working environment
-wd = "D:/Carbon_dynamics/UAS-processing/Test"
+wd = "/home/jovyan/data_forest_resiliency/UAS/input"
 setwd(wd)
 
 
 # explore the raw data and load the raw data file names
 
-file_list = dir("D:/Carbon_dynamics/UAS-processing/Test", pattern = ".las", full.names = FALSE, ignore.case = TRUE) 
-names_to_cloud = substr(file_list, 2, nchar(file_list)-4) # truncate the file names.
+file_list = dir(wd, pattern = ".las", full.names = FALSE, ignore.case = TRUE) 
+names_to_cloud = substr(file_list, 1, nchar(file_list)-4) # truncate the file names only to get the name part eliminating the extension.
 ```
 
 
@@ -55,42 +55,46 @@ names_to_cloud = substr(file_list, 2, nchar(file_list)-4) # truncate the file na
 # A point cloud is a three dimensional discrete set of points space. Each point can be identified using a set of three Cartesian coordinates (X, Y, and Z).
 # The set of point cloud can represent a 3D landscape, or a shape, or an object. 
 
-cropped_dense_point_cloud_fname <- file.path(paste0(file_list[2]))
+cropped_dense_point_cloud_fname <- file.path(paste0(file_list[1])) # the number here to say data from which file in the list we want to load
+
 dense_point_cloud <- lidR::readLAS(cropped_dense_point_cloud_fname)
-plot(dense_point_cloud,color = "Z")
+
+summary(dense_point_cloud) # this will show the data structure and high level information within the point cloud file we loaded.
+
+plot(dense_point_cloud,color = "Z") # color the points based on elevation or the Z coordinate
 
 #read digital surface model in raster format. Digital surface model here was created using proprietary software called Agisoft metashape. 
-main_dsm = raster(file.path(paste0("DSM_NIWOT_plt2.tif")))
+test_dsm = raster(file.path(paste0("cropped_dsm.tif")))
 
 #crop the digital surface model (a raster file that contains surface elevation data)
-test_dsm = crop(main_dsm,dense_point_cloud)
+#test_dsm = crop(main_dsm,dense_point_cloud)
 plot(test_dsm, main="Digital Surface Model")
 
-writeRaster(x = test_dsm, filename = "cropped_dsm.tif", overwrite = TRUE)
+#writeRaster(x = test_dsm, filename = "cropped_dsm.tif", overwrite = TRUE)
 
 ```
 
 
 ```{r}
 #assign variables and file saving location
-site_name <- "Test"
-flight_datetime <- "07-26-2022"
+site_name <- "NIWO"
+flight_datetime <- "06-28-2022"
 
 # directories to be created in this script
-new_dir <- file.path("data", site_name, flight_datetime)
+new_dir <- file.path("out_data", site_name, flight_datetime)
 
   if(!dir.exists(new_dir)) {
     dir.create(new_dir, recursive = TRUE)
   }
 
 
-classified_dense_pc <- file.path("data", site_name,flight_datetime, paste0( names_to_cloud[2],"_classified2.las"))
+classified_dense_pc <- file.path("data", site_name,flight_datetime, paste0( names_to_cloud[1],"_classified2.las"))
   
-cropped_dtm_fname <- file.path("data", site_name,flight_datetime, paste0(names_to_cloud[2], "_dtm2.tif"))
-cropped_chm_fname <- file.path("data", site_name,flight_datetime,paste0(names_to_cloud[2], "_chm2.tif"))
+cropped_dtm_fname <- file.path("out_data", site_name,flight_datetime, paste0(names_to_cloud[1], "_dtm2.tif"))
+cropped_chm_fname <- file.path("out_data", site_name,flight_datetime,paste0(names_to_cloud[1], "_chm2.tif"))
 
-cropped_ttops_fname <- file.path("data", site_name, flight_datetime, paste0(names_to_cloud[2], "_ttops_cropped2.gpkg"))
-cropped_crowns_fname <- file.path("data", site_name, flight_datetime,paste0(names_to_cloud[2], "_crowns_cropped2.gpkg"))
+cropped_ttops_fname <- file.path("out_data", site_name, flight_datetime, paste0(names_to_cloud[1], "_ttops_cropped2.gpkg"))
+cropped_crowns_fname <- file.path("out_data", site_name, flight_datetime,paste0(names_to_cloud[1], "_crowns_cropped2.gpkg"))
 ```
 
 
@@ -100,6 +104,9 @@ cropped_crowns_fname <- file.path("data", site_name, flight_datetime,paste0(name
 
 dense_point_cloud[["X scale factor"]] = 0.001
 dense_point_cloud[["Y scale factor"]] = 0.001
+
+
+# To classify ground in this module we use " cloth simulation function" algorithm. More information about the algorithm can be found https://r-lidar.github.io/lidRbook/gnd.html. The algorithm is first proposed by https://doi.org/10.3390/rs8060501
 
 classified_dense_point_cloud <- lidR::classify_ground(las = dense_point_cloud,
                                                       algorithm = csf(sloop_smooth = TRUE,
@@ -225,11 +232,11 @@ if(!file.exists(cropped_crowns_fname)) {
 
 ```{r}
 
-basemap= raster("D:/Carbon_dynamics/UAS-processing/Test/orthomosaic_NIWOT_plt2.tif")
+basemap= raster(file.path(paste0("orthomosaic_NIWOT_plt2.tif"")))
 
 crop_ortho = crop(basemap,test_dsm)
 
-#pal = colorRampPalette(c("green", "brown"))
+# pal = colorRampPalette(c("green","brown"))
 plot(chm)
 plot(crowns$geometry, add=TRUE)
 
