@@ -238,7 +238,7 @@ if(!file.exists(cropped_crowns_fname)) {
 
 ```{r}
 
-basemap= raster(file.path(paste0("orthomosaic_NIWOT_plt2.tif"")))
+basemap= raster(file.path(paste0("orthomosaic_NIWOT_plt2.tif")))
 
 crop_ortho = crop(basemap,test_dsm)
 
