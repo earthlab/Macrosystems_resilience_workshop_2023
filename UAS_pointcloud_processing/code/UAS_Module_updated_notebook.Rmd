@@ -3,6 +3,12 @@ title: "Tree delineations using drone based point cloud data"
 output: html_notebook
 ---
 
+```{r, setup, include=FALSE}
+knitr::opts_knit$set(root.dir = '/home/jovyan/data_forest_resiliency/UAS/input')
+
+```
+
+
 ```{r}
 ##########################################
 
