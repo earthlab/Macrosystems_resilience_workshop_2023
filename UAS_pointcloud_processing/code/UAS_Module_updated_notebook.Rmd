@@ -64,6 +64,7 @@ dense_point_cloud <- lidR::readLAS(cropped_dense_point_cloud_fname)
 summary(dense_point_cloud) # this will show the data structure and high level information within the point cloud file we loaded.
 
 #plot(dense_point_cloud,color = "Z") # color the points based on elevation or the Z coordinate
+bgplot3d(dense_point_cloud)
 ```
 
 
@@ -117,7 +118,7 @@ classified_dense_point_cloud <- lidR::classify_ground(las = dense_point_cloud,
                                                                       time_step = 0.65))
 
 #plot(classified_dense_point_cloud,color = "Classification")
-
+bgplot3d(classified_dense_point_cloud)
 
 ```
 
