@@ -4,7 +4,7 @@ output: html_notebook
 ---
 
 ```{r, setup, include=FALSE}
-knitr::opts_knit$set(root.dir = '/home/jovyan/data_forest_resiliency/UAS/input')
+knitr::opts_knit$set(root.dir = '/home/jovyan/data_forest_resiliency/UAS/input/input')
 
 ```
 
@@ -16,7 +16,7 @@ knitr::opts_knit$set(root.dir = '/home/jovyan/data_forest_resiliency/UAS/input')
 
 #check the required libraries are available. If not install required libraries.
 
-list.of.packages <- c("tidyverse","lidR","terra","raster","rgdal","ForestTools","RCSF","sp","sf","stars","rgl")
+list.of.packages <- c("tidyverse","lidR","terra","raster","rgdal","ForestTools","RCSF","sp","sf","stars")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
 
@@ -34,8 +34,8 @@ library(RCSF)
 library(sp)
 library(sf)
 library(stars)
-library(rgl)
-rgl::setupKnitr(autoprint = TRUE)
+# library(rgl)
+# rgl::setupKnitr(autoprint = TRUE)
 
 #install.packages("Rcpp", repos="https://rcppcore.github.io/drat")
 
@@ -43,15 +43,11 @@ rgl::setupKnitr(autoprint = TRUE)
 
 
 ```{r}
-# set working environment
-wd = "/home/jovyan/data_forest_resiliency/UAS/input"
-setwd(wd)
-
-
 # explore the raw data and load the raw data file names
 
 file_list = dir(wd, pattern = ".las", full.names = FALSE, ignore.case = TRUE) 
 names_to_cloud = substr(file_list, 1, nchar(file_list)-4) # truncate the file names only to get the name part eliminating the extension.
+file_list
 ```
 
 
@@ -67,13 +63,14 @@ dense_point_cloud <- lidR::readLAS(cropped_dense_point_cloud_fname)
 
 summary(dense_point_cloud) # this will show the data structure and high level information within the point cloud file we loaded.
 
-plot(dense_point_cloud,color = "Z") # color the points based on elevation or the Z coordinate
+#plot(dense_point_cloud,color = "Z") # color the points based on elevation or the Z coordinate
+```
 
+
+```{r}
 #read digital surface model in raster format. Digital surface model here was created using proprietary software called Agisoft metashape. 
-test_dsm = raster(file.path(paste0("cropped_dsm.tif")))
+test_dsm = raster(file.path(paste0("cropped_dsm_new.tif")))
 
-#crop the digital surface model (a raster file that contains surface elevation data)
-#test_dsm = crop(main_dsm,dense_point_cloud)
 plot(test_dsm, main="Digital Surface Model")
 
 #writeRaster(x = test_dsm, filename = "cropped_dsm.tif", overwrite = TRUE)
@@ -94,12 +91,9 @@ new_dir <- file.path("out_data", site_name, flight_datetime)
   }
 
 
-classified_dense_pc <- file.path("data", site_name,flight_datetime, paste0( names_to_cloud[1],"_classified2.las"))
-  
 cropped_dtm_fname <- file.path("out_data", site_name,flight_datetime, paste0(names_to_cloud[1], "_dtm2.tif"))
 cropped_chm_fname <- file.path("out_data", site_name,flight_datetime,paste0(names_to_cloud[1], "_chm2.tif"))
 
-cropped_ttops_fname <- file.path("out_data", site_name, flight_datetime, paste0(names_to_cloud[1], "_ttops_cropped2.gpkg"))
 cropped_crowns_fname <- file.path("out_data", site_name, flight_datetime,paste0(names_to_cloud[1], "_crowns_cropped2.gpkg"))
 ```
 
@@ -122,17 +116,14 @@ classified_dense_point_cloud <- lidR::classify_ground(las = dense_point_cloud,
                                                                       iterations = 500,
                                                                       time_step = 0.65))
 
-plot(classified_dense_point_cloud,color = "Classification")
+#plot(classified_dense_point_cloud,color = "Classification")
 
 
-if(!file.exists(classified_dense_pc)) {
-  lidR::writeLAS(las = classified_dense_point_cloud, file = classified_dense_pc)
-}
 ```
 
 
 ```{r}
-# create canopy height model
+# generate digital terrain model
 dtm <- lidR::grid_terrain(las = classified_dense_point_cloud,
                           res = 0.10, # was 0.5 and 0.25 before
                           algorithm = tin())
@@ -143,7 +134,10 @@ terra::writeRaster(x = dtm, filename = cropped_dtm_fname, overwrite = TRUE)
 dtm_resamp <- raster::resample(x = dtm, y = test_dsm, method = "bilinear")
 
 plot(dtm_resamp, main = "Digital terrain model")
+```
 
+
+```{r}
 # generate canopy height model. canopy height model is a raster image where the values in pixel represents the canopy height at that pixel.
 # The canopy height here is the difference between digital surface and the digital terrain models.
 chm <- test_dsm - dtm_resamp
@@ -188,22 +182,12 @@ plot(chm_smooth,main =  "Canopy height model")
 
 points(ttop_crd$x,ttop_crd$y)
 
-if(!file.exists(cropped_ttops_fname)) {
-  
-  sf::st_write(obj = ttops, dsn = cropped_ttops_fname, delete_dsn = TRUE)
-}
 ```
 
 
 ```{r}
 # tree crown delineation. In this section we segment tree crowns of each tree top we generated in the earlier step. We use "mcws" watershed algorithm.  
 
-
-  # read necessary data products
-ttops <- sf::st_read(cropped_ttops_fname)
-  # the {terra} package will be replacing {raster}, so here's how this is done in {terra}
-  
-  
 
 non_spatial_ttops <-
   ttops %>%
@@ -233,23 +217,11 @@ crowns <-
 if(!file.exists(cropped_crowns_fname)) {
   sf::st_write(obj = crowns, dsn = cropped_crowns_fname, delete_dsn = TRUE)
 }
-```
-
-
-```{r}
-
-basemap= raster(file.path(paste0("orthomosaic_NIWOT_plt2.tif")))
-
-crop_ortho = crop(basemap,test_dsm)
 
 # pal = colorRampPalette(c("green","brown"))
 plot(chm)
 plot(crowns$geometry, add=TRUE)
 
-plot(crop_ortho)
-plot(crowns$geometry, add=TRUE)
-
-
-
- 
 ```
+
+
