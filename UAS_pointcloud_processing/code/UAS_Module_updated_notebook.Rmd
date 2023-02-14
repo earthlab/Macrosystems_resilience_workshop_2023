@@ -11,6 +11,7 @@ knitr::opts_knit$set(root.dir = '/home/jovyan/data_forest_resiliency/UAS/input/i
 
 ```{r}
 ##########################################
+knitr::opts_knit$set(root.dir = '/home/jovyan/data_forest_resiliency/UAS/input/input')
 
 ## In this module we use unmanned aerial system derived point cloud data to delineate individual tree locations and their individual canopy areas.
 
@@ -23,6 +24,7 @@ if(length(new.packages)) install.packages(new.packages)
 
 ## Load the required libraries. We use several libraries that can help with data loading, reading spatial data including raster and point cloud data, 
 ## analyse those data, and to visualize and write the spatial data back into a desired location.
+options("rgdal_show_exportToProj4_warnings"="none")
 
 library(tidyverse)
 library(lidR)
@@ -43,6 +45,8 @@ library(stars)
 
 
 ```{r}
+
+knitr::opts_knit$set(root.dir = '/home/jovyan/data_forest_resiliency/UAS/input/input')
 # explore the raw data and load the raw data file names
 
 wd = "/home/jovyan/data_forest_resiliency/UAS/input/input"
@@ -54,6 +58,8 @@ file_list
 
 
 ```{r}
+
+knitr::opts_knit$set(root.dir = '/home/jovyan/data_forest_resiliency/UAS/input/input')
 #get the raw point cloud data from the data storage and display the point cloud. The point cloud data was produced 
 #in Agisoft metashape proprietary software using photogrammetry and used hundreds of RBG images collected using a phantom 4 pro drone.
 # A point cloud is a three dimensional discrete set of points space. Each point can be identified using a set of three Cartesian coordinates (X, Y, and Z).
@@ -65,12 +71,13 @@ dense_point_cloud <- lidR::readLAS(cropped_dense_point_cloud_fname)
 
 summary(dense_point_cloud) # this will show the data structure and high level information within the point cloud file we loaded.
 
-#plot(dense_point_cloud,color = "Z") # color the points based on elevation or the Z coordinate
-bgplot3d(dense_point_cloud)
 ```
 
 
 ```{r}
+
+knitr::opts_knit$set(root.dir = '/home/jovyan/data_forest_resiliency/UAS/input/input')
+
 #read digital surface model in raster format. Digital surface model here was created using proprietary software called Agisoft metashape. 
 test_dsm = raster(file.path(paste0("cropped_dsm_new.tif")))
 
@@ -82,6 +89,10 @@ plot(test_dsm, main="Digital Surface Model")
 
 
 ```{r}
+
+knitr::opts_knit$set(root.dir = '/home/jovyan/data_forest_resiliency/UAS/input/input')
+
+
 #assign variables and file saving location
 site_name <- "NIWO"
 flight_datetime <- "06-28-2022"
@@ -102,6 +113,9 @@ cropped_crowns_fname <- file.path("out_data", site_name, flight_datetime,paste0(
 
 
 ```{r}
+
+knitr::opts_knit$set(root.dir = '/home/jovyan/data_forest_resiliency/UAS/input/input')
+
 # create digital terrain model. In this section, we classify the points into ground and above ground points. Then use ground points to generate digital terrain model.
 # The digital terrain model represent the topography of the bare ground underneath the trees, grass or shrubs.
 
@@ -119,13 +133,14 @@ classified_dense_point_cloud <- lidR::classify_ground(las = dense_point_cloud,
                                                                       iterations = 500,
                                                                       time_step = 0.65))
 
-#plot(classified_dense_point_cloud,color = "Classification")
-bgplot3d(classified_dense_point_cloud)
 
 ```
 
 
 ```{r}
+
+knitr::opts_knit$set(root.dir = '/home/jovyan/data_forest_resiliency/UAS/input/input')
+
 # generate digital terrain model
 dtm <- lidR::grid_terrain(las = classified_dense_point_cloud,
                           res = 0.10, # was 0.5 and 0.25 before
@@ -141,6 +156,10 @@ plot(dtm_resamp, main = "Digital terrain model")
 
 
 ```{r}
+
+knitr::opts_knit$set(root.dir = '/home/jovyan/data_forest_resiliency/UAS/input/input')
+
+
 # generate canopy height model. canopy height model is a raster image where the values in pixel represents the canopy height at that pixel.
 # The canopy height here is the difference between digital surface and the digital terrain models.
 chm <- test_dsm - dtm_resamp
@@ -154,6 +173,10 @@ plot(chm_smooth, main =  "Canopy height model")
 
 
 ```{r}
+
+knitr::opts_knit$set(root.dir = '/home/jovyan/data_forest_resiliency/UAS/input/input')
+
+
 # detecting tree tops. In this section we navigate through each and every cell with a given moving window filter. The vwf or the variable window filter algorithm developed by Popescu and Wynne (2004). The size of the window changes based on the height of the cell on which it is centered.  from the cell that has the maximum height in the canopy height model and assign them to a certain tree. Thus it is important to define the variable size window at the first. Here we use 
 # the equation "x^2*c + x*b + a" where x is the pixel height.  
 
@@ -189,6 +212,10 @@ points(ttop_crd$x,ttop_crd$y)
 
 
 ```{r}
+
+knitr::opts_knit$set(root.dir = '/home/jovyan/data_forest_resiliency/UAS/input/input')
+
+
 # tree crown delineation. In this section we segment tree crowns of each tree top we generated in the earlier step. We use "mcws" watershed algorithm.  
 
 
