@@ -65,7 +65,7 @@ knitr::opts_knit$set(root.dir = '/home/jovyan/data_forest_resiliency/UAS/input/i
 # A point cloud is a three dimensional discrete set of points space. Each point can be identified using a set of three Cartesian coordinates (X, Y, and Z).
 # The set of point cloud can represent a 3D landscape, or a shape, or an object. 
 
-cropped_dense_point_cloud_fname <- file.path(paste0(file_list[1])) # the number here to say data from which file in the list we want to load
+cropped_dense_point_cloud_fname <- file.path(paste0(wd, "/", file_list[1])) # the number here to say data from which file in the list we want to load
 
 dense_point_cloud <- lidR::readLAS(cropped_dense_point_cloud_fname)
 
@@ -79,7 +79,7 @@ summary(dense_point_cloud) # this will show the data structure and high level in
 knitr::opts_knit$set(root.dir = '/home/jovyan/data_forest_resiliency/UAS/input/input')
 
 #read digital surface model in raster format. Digital surface model here was created using proprietary software called Agisoft metashape. 
-test_dsm = raster(file.path(paste0("cropped_dsm_new.tif")))
+test_dsm = raster(file.path(paste0(wd,"/","cropped_dsm_new.tif")))
 
 plot(test_dsm, main="Digital Surface Model")
 
