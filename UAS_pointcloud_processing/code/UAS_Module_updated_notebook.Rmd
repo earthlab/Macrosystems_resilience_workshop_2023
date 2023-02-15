@@ -126,12 +126,12 @@ dense_point_cloud[["Y scale factor"]] = 0.001
 # To classify ground in this module we use " cloth simulation function" algorithm. More information about the algorithm can be found https://r-lidar.github.io/lidRbook/gnd.html. The algorithm is first proposed by https://doi.org/10.3390/rs8060501
 
 classified_dense_point_cloud <- lidR::classify_ground(las = dense_point_cloud,
-                                                      algorithm = csf(sloop_smooth = TRUE,
-                                                                      class_threshold = 0.25,
-                                                                      cloth_resolution = 0.50, # was 0.5 before,
-                                                                      rigidness = 1,
+                                                      algorithm = csf(sloop_smooth = TRUE, # When sharp slopes exist, smooth to reduced errors.
+                                                                      class_threshold = 0.5, #Distance to the simulated cloth to classify point into ground/non-ground.
+                                                                      cloth_resolution = 0.25, # distance between points in the point cloud
+                                                                      rigidness = 1, #1:fit rugged terrain, 2:medium cloth, 3: hard cloth (for flat terrain) 
                                                                       iterations = 500,
-                                                                      time_step = 0.65))
+                                                                      time_step = 0.65)) #Time step when simulating the cloth under the gravity. 
 
 
 ```
@@ -186,7 +186,7 @@ max_chm = chm@ptr$range_max
 print(max_chm)
 
 
-a <- 0.3 # was 0.3
+a <- 1 # was 0.3
 b <- 0.04 #0.04
 c <- 0 #0
 
@@ -194,8 +194,8 @@ lin <- function(x){x^2*c + x*b + a} # window filter function to use in next step
 
 ttops <- ForestTools::vwf(CHM = raster::raster(chm), 
                           winFun = lin, 
-                          minHeight = 0.5,# change min height based on research objectives 
-                          maxWinDiameter = 99) %>% 
+                          minHeight = 2,# change min height based on research objectives 
+                          maxWinDiameter = 200) %>% 
    sf::st_as_sf()
     
 ttop_crd = ttops %>%
@@ -227,7 +227,7 @@ non_spatial_ttops <-
   
 crowns <-
   ttops %>%
-  ForestTools::mcws(CHM = raster::raster(chm), minHeight = 0.5, format = "raster") %>% # minheight was 1 m before
+  ForestTools::mcws(CHM = raster::raster(chm), minHeight = 0.5, format = "raster") %>% # # minheight here should be less than minheight in ttops
   setNames(nm = "treeID") %>%
   st_as_stars() %>%
   st_as_sf(merge = TRUE) %>%
