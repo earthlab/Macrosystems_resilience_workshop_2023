@@ -55,6 +55,7 @@ nlcdFileNames <- list.files(here("data", folder),
                             pattern = "NLCD*", full.names = TRUE)
 nlcdCollection <- sprc(nlcdFileNames) #Create as SpatRasterCollection since they aren't of the same area
 nlcd <- mosaic(nlcdCollection) #Mosaic the SpatRasterCollection
+writeRaster(nlcd_southern_rockies, here("data", folder, "nlcd_southern_rockies.tif"))
 
 ##########Clip, Mask, & Project the Disturbance Stack
 
