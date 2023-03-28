@@ -11,6 +11,7 @@
 library(here) #Relative path best practices
 library(terra) #New raster library
 library(sf) #New vector library
+library(tidyverse)
 
 #####Clean workspace
 rm(list=ls()) #Ensure empty workspace
@@ -38,7 +39,7 @@ folder <- "new_sandbox" #SET THIS
 
 #Reproject EPA lvl 3
 aoi <- st_transform(aoi, chosenCRS)
-st_write(aoi, here("data", folder, "EPA_lvl3_SRockies_epsg32613.shp"))
+st_write(aoi, here("data", folder, "EPA_lvl3_SRockies_epsg32613.shp"), append = FALSE)
 
 #Reproject EPA lvl 4 to match
 epa4 <- st_read("data/aoi/EPA_lvl4_SRockies_raw3.shp")
@@ -61,8 +62,9 @@ writeRaster(nlcd_southern_rockies, here("data", folder, "nlcd_southern_rockies.t
 
 #Load disturbance stack & fix names
 distStackFileNames <- list.files(here("data", "data_stack_western_conus_v1", "western-conus", "western-conus"),
-                                 pattern = "*.tif", full.names = TRUE)
+                                 pattern = "*.tif$", full.names = TRUE)
 distStack <- rast(distStackFileNames)
+
 
 #Create disturbance layer names
 dNamesRoot <- "forest-disturbance-s-rockies-"
@@ -111,4 +113,6 @@ clipmask.raster.to.vector <- function(raster, vector, setCRS) {
 
 #Run function
 disturbance_stack_southern_rockies <- clipmask.raster.to.vector(distStack, aoi, chosenCRS)
-writeRaster(disturbance_stack_southern_rockies, here("data", folder, "disturbance_stack_southern_rockies.tif"))
+datatype(disturbance_stack_southern_rockies)
+writeRaster(disturbance_stack_southern_rockies, here("data", folder, "disturbance_stack_southern_rockies_EPSG32613.tif"), datatype = 'INT1U')
+
